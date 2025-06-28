@@ -1,97 +1,111 @@
 services:
-
-  eureka-server:
-    build:  ./eureka-server
-    ports:
-      - "9099:9099"
-    
-  api-gateway:
-    build:  ./api-gateway
-    ports: 
-      - "8080:8080"
-    depends_on:
-      - eureka-server
-
   postgres:
-    image: postgres
-    restart:  always
+    image: postgres:15
+    container_name: postgres
     environment:
-      POSTGRES_USER:  postgres
-      POSTGRES_PASSWORD:  postgres
-      POSTGRES_DB:  kyc_db
-    volumes: 
-      - kyc-data:/var/lib/postgresql/data
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kyc_db
     ports:
-      - "5434:5432"
-
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
-    image:  rabbitmq:4.1.0-management
+    image: rabbitmq:3-management
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_PASS:  guest
-      RABBITMQ_DEFAULT_USER:  guest
-    restart:  always
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
-  kyc-service:
-    build:  ./kyc-service
+  eurekaserver:
+    image: riko04/eurekaserver:latest
+    container_name: eurekaserver
     ports:
-      - "8081:8081"
-    depends_on:
-      - eureka-server
-      - api-gateway
-      - postgres
-      - rabbitmq
+      - "8761:8761"
+
+  apigateway:
+    image: riko04/apigateway:latest
+    container_name: apigateway
+    ports:
+      - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL:  jdbc:postgresql://postgres:5432/kyc_db
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_JPA_HIBERNATE_DDL-AUTO:  update
-
-
-  email-service:
-    build: ./email-service
-    ports:
-      - "8082:8082"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
     depends_on:
-      - eureka-server
-      - api-gateway
-      - rabbitmq
-    
-  report-service:
-    build:  ./kyc-backend-report
-    ports:
-      - "8083:8083"
+      - eurekaserver
+
+  emailservice:
+    image: riko04/emailservice:latest
+    container_name: emailservice
     environment:
-      SPRING_DATASOURCE_URL:  jdbc:postgresql://postgres:5432/kyc_db
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_JPA_HIBERNATE_DDL-AUTO:  update
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
     depends_on:
-      - eureka-server
-      - api-gateway
-      - postgres
+      - rabbitmq
+      - eurekaserver
 
-      
-  kyc-report-frontend:
-      build: ./kyc-report-front-end
-      ports:
-      - "4201:80"
-      depends_on:
-        - report-service
-        
-    
-
-  kyc-frontend:
-    build: KYC-customer-frontend
+  kycbackend:
+    image: riko04/kycbackend:latest
+    container_name: kycbackend
     ports:
-    - "4200:80"
+      - "9001:9001"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: main_db
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
     depends_on:
-      - kyc-service
-      - email-service
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eurekaserver:
+        condition: service_started
 
+  reportsbackend:
+    image: riko04/reportsbackend:latest
+    container_name: reportsbackend
+    ports:
+      - "9002:9002"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: main_db
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      eurekaserver:
+        condition: service_started
+
+  kycfrontend:
+    image: riko04/kycfrontend:latest
+    container_name: kycfrontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - kycbackend
+
+  reportsfrontend:
+    image: riko04/reportsfrontend:latest
+    container_name: reportsfrontend
+    ports:
+      - "3002:80"
+    depends_on:
+      - reportsbackend
 
 volumes:
-  kyc-data:
+  postgres_data:

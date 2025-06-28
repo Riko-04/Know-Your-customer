@@ -17,7 +17,7 @@ public class EmailController {
     @GetMapping("send-email")
     public ResponseEntity<?> sendEmail(){
          try {
-            emailService.sendMail("lwalacecil13@gmail.com");
+            emailService.sendMail("echoge11@gmail.com");
         } catch (MessagingException e) {
             e.printStackTrace();
             return ResponseEntity.ok("Email not sent");
