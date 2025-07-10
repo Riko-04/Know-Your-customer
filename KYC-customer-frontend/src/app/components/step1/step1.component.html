@@ -121,7 +121,7 @@
   </div>
 
   <div class="action-buttons">
-    <button mat-stroked-button class="back-button nav-button" disabled type="button" aria-label="Back button (disabled)">
+    <button mat-stroked-button class="back-button nav-button" type="button" aria-label="Back button" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon> Back
     </button>
     <button mat-flat-button color="primary" class="next-button nav-button" type="submit" aria-label="Next button">

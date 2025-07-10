@@ -14,6 +14,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxIntlTelInputModule } from 'ngx-intl-tel-input';
+import { Location } from '@angular/common';
 import { CountryISO, PhoneNumberFormat, SearchCountryField } from 'ngx-intl-tel-input';
 import { StepProgressComponent } from '../../shared/components/step-progress/step-progress.component';
 import { DateFilterFn } from '@angular/material/datepicker';
@@ -111,7 +112,8 @@ personal_details = signal({
     private router: Router,
     private countyService: CountyService,
     private kycService: KycService,//inject the kyc service so you can call its methods
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private location: Location
   ) {
 
   //initialize reactive forms with validators
@@ -158,6 +160,10 @@ personal_details = signal({
         this.personalInfoForm.get('dateOfBirth')?.setErrors(errors);
       }
     });
+  }
+
+  goBack() {
+    this.location.back();
   }
 
   dateOfBirthValidator() {

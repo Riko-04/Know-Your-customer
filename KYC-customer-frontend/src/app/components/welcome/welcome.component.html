@@ -1,35 +1,23 @@
-<div class="welcome-container">
+<div class="welcome-container" [class.overlay-active]="showUsername || showChat">
   <mat-card class="welcome-card">
     <div class="welcome-header">
       <mat-icon class="welcome-icon">verified_user</mat-icon>
       <h1>Welcome to KYC Verification</h1>
     </div>
-    
+
     <mat-card-content>
       <div class="welcome-content">
         <p class="welcome-description">
           We're here to help you complete your Know Your Customer (KYC) verification process. This will only take a few minutes.
         </p>
-        
+
         <div class="steps-overview">
           <h2>What you'll need:</h2>
           <ul>
-            <li>
-              <mat-icon>person</mat-icon>
-              <span>Personal Information</span>
-            </li>
-            <li>
-              <mat-icon>badge</mat-icon>
-              <span>Valid ID Document</span>
-            </li>
-            <li>
-              <mat-icon>photo_camera</mat-icon>
-              <span>A Selfie for Verification</span>
-            </li>
-            <li>
-              <mat-icon>email</mat-icon>
-              <span>Active Email Address</span>
-            </li>
+            <li><mat-icon>person</mat-icon><span>Personal Information</span></li>
+            <li><mat-icon>badge</mat-icon><span>Valid ID Document</span></li>
+            <li><mat-icon>photo_camera</mat-icon><span>A Selfie for Verification</span></li>
+            <li><mat-icon>email</mat-icon><span>Active Email Address</span></li>
           </ul>
         </div>
 
@@ -37,15 +25,59 @@
           <mat-icon>schedule</mat-icon>
           <span>Estimated time: 5-10 minutes</span>
         </div>
+
+        <mat-card-actions>
+          <button mat-flat-button color="primary" (click)="onContinue()">
+            Get Started <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+
+        <!-- Have Questions Section -->
+        <div class="have-questions">
+          <div class="question-row">
+            <h3>Have Questions?</h3>
+            <button
+              mat-stroked-button
+              color="primary"
+              class="question-button"
+              (click)="openUsername()"
+              [disabled]="showUsername || showChat"
+            >
+              Ask the Assistant
+            </button>
+          </div>
+        </div>
       </div>
     </mat-card-content>
-
-    <mat-card-actions>
-      <button mat-flat-button color="primary" (click)="onContinue()">
-        Get Started
-        <mat-icon>arrow_forward</mat-icon>
-      </button>
-    </mat-card-actions>
   </mat-card>
-</div> 
-<app-chat-widget></app-chat-widget>
+
+  <!-- Chat FAB -->
+  <!-- <button
+    mat-fab
+    color="accent"
+    class="chat-fab"
+    matTooltip="Chat with AI"
+    (click)="openUsername()"
+    [disabled]="showUsername || showChat"
+  >
+    <mat-icon>chat</mat-icon>
+  </button> -->
+
+  <!-- Username Popup -->
+  <div *ngIf="showUsername" class="username-overlay">
+    <app-username
+      (usernameSubmitted)="startChat($event)"
+      (cancel)="closeUsername()"
+    ></app-username>
+  </div>
+
+  <!-- Chat Component -->
+  <div class="chat-wrapper" *ngIf="showChat" (click)="handleOverlayClick()">
+    <div (click)="$event.stopPropagation()">
+      <app-chat (closeRequested)="closeChat()"></app-chat>
+    </div>
+  </div>
+
+  <!-- Page blur backdrop -->
+  <div class="backdrop" *ngIf="showUsername || showChat" (click)="handleOverlayClick()"></div>
+</div>

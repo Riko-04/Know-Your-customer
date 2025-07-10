@@ -1,0 +1,74 @@
+<div class="chat-wrapper" @chatPopup>
+  <!-- Sidebar -->
+  <div class="sidebar" *ngIf="showHistory">
+    <h3>Previous Chats</h3>
+    <ul>
+      <li *ngFor="let id of chatService.getSessionIds()" (click)="loadSession(id)">
+        {{ id | date:'short' }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Chat Box -->
+  <mat-card class="chat-card">
+    <div class="chat-header">
+      <button mat-icon-button (click)="toggleHistory()" matTooltip="History">
+        <mat-icon>history</mat-icon>
+      </button>
+      <span class="chat-title">Giktek AI Assistant</span>
+      <div class="chat-controls">
+        <button mat-icon-button (click)="startNewChat()" matTooltip="New Chat">
+          <mat-icon>autorenew</mat-icon>
+        </button>
+        <button mat-icon-button (click)="closeChat()" matTooltip="Close">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <mat-card-content class="message-area" #messageArea>
+      <!-- Temporary welcome message -->
+    <div
+      *ngIf="showWelcome"
+      class="message-bubble ai"
+    >
+      <img class="avatar" [src]="getAvatarUrl('Giktek AI')" alt="Avatar" />
+      <div class="content">
+        Hello 👋. Please briefly describe your issue so we can help you better.
+      </div>
+    </div>
+
+      <div
+        *ngFor="let message of messages$ | async"
+        class="message-bubble"
+        [ngClass]="{ user: message.sender === username, ai: message.sender !== username }"
+      >
+        <img class="avatar" [src]="getAvatarUrl(message.sender)" alt="Avatar" />
+        <div class="content">{{ message.content }}</div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions class="chat-input">
+      <form (ngSubmit)="sendMessage()" class="full-width">
+        <mat-form-field appearance="fill" class="full-width modern-input">
+          <input
+            matInput
+            placeholder="Type your message..."
+            [(ngModel)]="messageContent"
+            name="messageContent"
+            required
+          />
+        </mat-form-field>
+        <button
+          mat-mini-fab
+          color="primary"
+          type="submit"
+          [disabled]="!messageContent.trim()"
+          matTooltip="Send"
+        >
+          <mat-icon>send</mat-icon>
+        </button>
+      </form>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -1,0 +1,21 @@
+.username-card {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.welcome-icon {
+  font-size: 40px;
+  margin-right: 10px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
